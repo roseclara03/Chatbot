@@ -1,3 +1,5 @@
+import tkinter as tk
+from tkinter import PhotoImage 
 import random
 import re
 import tempfile
@@ -5,32 +7,78 @@ import os
 import pygame
 import pyttsx3
 
-
 engine = pyttsx3.init()
-
+language_preference = "english"
 
 pygame.mixer.init()
-
-
+user_name = ""  
+submit_button = None
 def greet_user():
-    engine.say("Namaskaram! I am Mahabali,What is your name my dear? ")
+    global user_name, submit_button 
+    engine.say("Namaskaram! I am Mahabali, What is your name my dear? ")
     engine.runAndWait()
 
-    print("Maveli:Namaskaram! I am Mahabali,What is your name my dear? ")  
-    user_name = input("You: ")  
-    print(f"Namaskaram, {user_name}! How can I help you? If you have any questions for me, type 'questions'. If you need to change the language, type 'language'. If you want to exit, type 'bye'.")
-    engine.runAndWait()
-    engine.say(f"Namaskaram, {user_name}! How can I help you? If you have any questions for me, type 'questions'. If you need to change the language, type 'language'. If you want to exit, type 'bye'.")
-    engine.runAndWait()
+    print("Maveli: Namaskaram! I am Mahabali, What is your name my dear? ")
+    
+    
+    greeting_label = tk.Label(root, text="Maveli: Namaskaram! I am Mahabali, What is your name my dear?")
+    greeting_label.pack()
 
-    return user_name
 
+    user_name_entry = tk.Entry(root, width=50)
+    user_name_entry.pack()
+
+    
+    submit_button = tk.Button(root, text="Submit", command=lambda: get_user_name(user_name_entry, submit_button))
+    submit_button.pack()
+
+def get_user_name(entry, button):
+    global user_name  
+    user_name = entry.get()
+    
+    user_name_label = tk.Label(root, text=f"You: {user_name}")
+    user_name_label.pack()
+    
+    entry.destroy()  
+    button.destroy()  
+    
+   
+    initial_greeting = f"Maveli: Namaskaram, {user_name}! How can I help you? If you have any questions for me, type 'questions'. If you need to change the language, type 'language'. If you want to exit, type 'bye'.\n"
+    chat_history.insert(tk.END, initial_greeting)
+    conversation_history.append(initial_greeting)
+    speak_response(initial_greeting, language_preference)
+
+
+
+
+
+
+
+def send_message():
+    global language_preference, user_name  
+    user_message = user_input.get()
+    user_message_with_name = f"{user_name}: {user_message}\n"
+    
+    chat_history.insert(tk.END, user_message_with_name)  
+    conversation_history.append(user_message_with_name)
+    user_input.delete(0, tk.END)
+
+    response, language_preference = handle_user_query(user_message, language_preference)
+    
+    response_with_prefix = f"Maveli: {response}\n"
+    chat_history.insert(tk.END, response_with_prefix)
+    conversation_history.append(response_with_prefix)
+    speak_response(response, language_preference)
+
+def speak_response(response, language_preference):
+    conversation_text = "\n".join(conversation_history)
+    print(conversation_text) 
 
 knowledge_base = {
-    "what is onam": {
+    " what is onam": {
         "responses": {
-            "english": "Onam is an annual Indian harvest and cultural festival related to Hinduism ,celebrated mostly by the people of Kerala but now ireespective of caste ,creed and religion ever people n kerala celebrate onam. A major annual event for Keralites, it is the official festival of the state and includes a spectrum of cultural events. Onam commemorates King Mahabali and Vamana.",
-            "malayalam": "Onam malayalikalude hindhava mathavumay bandhapetta parambaragathamaya oru vilavidup agoshaman enkolum jaathi matha bedha manye keralathile ellarum onam agoshikunu. Keralathinte etavum pradhanyamulla agosham an onam athil koreye achara anushtanangal ulpedunnu. Onam mahabaliyude vamanantem varavine soochipikunu",
+            "english": "Onam is an annual Indian harvest and cultural festival celebrated mostly by the people of Kerala. It is the official festival of the state and includes a spectrum of cultural events. Onam commemorates King Mahabali and Vamana.",
+            "malayalam": "Onam malayalikalude hindhava mathavumay bandhapetta parambaragathamaya oru vilavidup agoshaman enkolum jaathi matha bedha manye keralathile ellarum onam agoshikkunath. Keralathinte etavum pradhanyamulla agosham an onam athil koreye achara anushtanangal ulpedunnu. Onam mahabaliyude vamanantem varavine soochipikunu",
         },
         "questions": [
             "tell me about onam",
@@ -57,7 +105,7 @@ knowledge_base = {
     },
     "onam pookalam": {
         "responses": {
-            "english": "Pookalam is an intricate and colourful arrangement of flowers laid on the floor. Tradition of decorating Pookalam is extremely popular in Kerala and is followed as a ritual in every household during ten-day-long Onam celebrations from the day of atham.",
+            "english": "Pookalam is an intricate and colorful arrangement of flowers laid on the floor. The tradition of decorating Pookalam is extremely popular in Kerala and is followed as a ritual in every household during the ten-day-long Onam celebrations from the day of atham.",
             "malayalam": "Onam Pookalam pookalude bangiyil nilath orukki veed alankarikunna oru achararaman. Ee acharam keralathile mikka veedukalilum thudarnu varunnond.Atham muthal path divsthek onam pookal idum",
         },
         "questions": [
@@ -91,8 +139,8 @@ knowledge_base = {
     },
     "onam legends": {
         "responses": {
-            "english": "Myself maveli or mahabalii is a beloved mythical king  born in Kerala.  I was known for my righteousness and equality, bringing prosperity and happiness to his kingdom. Lord Vishnu incarnated as a Brahmin boy named Vamana and asked for land that he could cover in three steps. I agreed but was amazed when Vamana grew to encompass the universe in two steps. Realizing Vamana's divinity, I offered my head for the third step, which sent me to the netherworld with the promise of an annual visit.",
-            "malayalam": "Mahabali adhava maveli enna njan oru sankalipika rajav an.Njan barichirunna sthalath manushyathavum sambal samridhiyum kond varan njan ennum shredhirunnu. Vishnu Devan oru Brahmina kuttiyude veshathil avatharam edthu vannit oru moon adi mann chodhichu.Njan sammadhichu pakshe vamanan rand adi vechapozhekm prapancham muzhuvan adiyilayi.Ith kand njan moonamthe adi ente shirasil vechukollan parnju angne njan pathalathilek poi.Ithin anusruhtmayitan ella varshavam njan ente prajakale kanan varunnath.",
+            "english": "King Mahabali, also known as Maveli, is a beloved mythical king born in Kerala. He was known for his righteousness and equality, bringing prosperity and happiness to his kingdom. Lord Vishnu incarnated as a Brahmin boy named Vamana and asked for land that he could cover in three steps. King Mahabali agreed but was amazed when Vamana grew to encompass the universe in two steps. Realizing Vamana's divinity, King Mahabali offered his head for the third step, which sent him to the netherworld with the promise of an annual visit.",
+            "malayalam": "Mahabali adhava maveli enna njan oru sankalipika rajav an. Njan barichirunna sthalath manushyathavum sambal samridhiyum kond varan njan ennum shredhirunnu. Vishnu Devan oru Brahmina kuttiyude veshathil avatharam edthu vannit oru moon adi mann chodhichu. Njan sammadhichu pakshe vamanan rand adi vechapozhekm prapancham muzhuvan adiyilayi. Ith kand njan moonamthe adi ente shirasil vechukollan parnju angne njan pathalathilek poi. Ithin anusruhtmayitan ella varshavam njan ente prajakale kanan varunnath.",
         },
         "questions": [
             "What are the prominent legends associated with Onam?",
@@ -111,7 +159,7 @@ knowledge_base = {
             "who is maveli",
             "who is vamanan",
             "vishnu",
-            "lord visnu",
+            "lord vishnu",
             "Tell me the story of King Mahabali and his connection to Onam.",
             "Are there any other mythological stories related to Onam?",
         ],
@@ -119,7 +167,7 @@ knowledge_base = {
     "onam attire": {
         "responses": {
             "english": "Onam attire, known as 'Onakodi,' is traditional clothing worn during the festival. Men wear 'Mundu' and 'Shirt' or 'Veshti,' while women adorn themselves in beautiful sarees. The attire reflects Kerala's rich cultural heritage.",
-            "malayalam": "Onathile vasthram, 'Onakodi' enna peru aanu. Purushanmar 'Mundu'  athava 'Veshti' kondu. Sthreekal 'kerala saree' udukunu. Penkuttikal pattu pavada allenkil half saree an udukarullath.",
+            "malayalam": "Onathile vasthram, 'Onakodi' enna peru aanu. Purushanmar 'Mundu' athava 'Veshti' kondu. Sthreekal 'kerala saree' udukunu. Penkuttikal pattu pavada allenkil half saree an udukarullath.",
         },
         "questions": [
             "What is Onakodi, and why is it significant during Onam?",
@@ -167,7 +215,6 @@ knowledge_base = {
             "Which songs are commonly sung during Onam?",
         ],
     },
-    
 }
 
 def preprocess_query(query):
@@ -290,16 +337,36 @@ def handle_user_query(query, language_preference):
 
 
 
-
-def main():
-    user_name = greet_user()
-    language_preference = "english"
-
-    while True:
-        user_input = input(f"{user_name}: ")  
-
-        response, language_preference = handle_user_query(user_input, language_preference)
-        speak_response(response, language_preference)
-
 if __name__ == "__main__":
-    main()
+    root = tk.Tk()
+    root.title("Maveli Chatbot")
+
+    background_image = PhotoImage(file="maveli.png")  
+
+    canvas = tk.Canvas(root, width=background_image.width(), height=background_image.height())
+    canvas.pack()
+
+    
+    canvas.create_image(0, 0, anchor=tk.NW, image=background_image)
+
+    button_frame = tk.Frame(canvas, background='white')  #
+    button_frame.place(x=10, y=background_image.height() - 25)  
+
+    chat_history = tk.Text(canvas, wrap=tk.WORD, width=50, height=20, bd=0, bg=canvas.cget('bg'))  
+    chat_history.place(x=10, y=10)  
+
+    user_input = tk.Entry(canvas, width=50)
+    user_input.place(x=10, y=background_image.height() - 50)  
+
+    conversation_history = []
+
+    send_button = tk.Button(button_frame, text="Send", command=send_message)
+    send_button.pack(side=tk.LEFT, padx=5)
+
+    greet_user()
+
+    root.mainloop()
+
+
+
+
