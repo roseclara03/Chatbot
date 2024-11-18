@@ -1,6 +1,6 @@
-This is a chatbot designed for a competition.
-This chatbot narrates so you may increase the volume of your computer.
-The Maveli chatbot answers questions about onam and you can change the language according to your preference
-additional modules like  pyttsx3 pygame tkinter are necessary
-In some computers tkinter is not working so I am providing code without tkinter
-code without tkinter is cb2.py and code with tkinter is chatbot.py
+The Maveli Chatbot is a voice-enabled assistant designed for competitions, answering questions about Onam with support for English and Malayalam. It uses modules like pyCB2.py. A basic version without GUI for systems without tkinter.
+- Chatbot.py: A GUI version using tkinter for a more interactive interface.
+
+While functional, the chatbot has some limitations. For example, instead of matching queries directly, keywords could have been included in the knowledge base dictionary for better efficiency. As a beginner, I wasn’t fully aware of code complexity, which could have improved the design.
+
+Despite these challenges, the chatbot provides a fun, educational way to explore Onam traditions through technology.
